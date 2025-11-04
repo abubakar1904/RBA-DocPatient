@@ -48,7 +48,7 @@ export const sendEmail = async (email, subject, text) => {
 
     return { previewUrl };
   } catch (err) {
-    console.error("❌ Error sending email:", err.message);
+    console.error("Error sending email:", err.message);
     // If Gmail auth fails with 535 or similar, auto-fallback to Ethereal
     const isAuthError =
       String(err?.responseCode) === "535" || /535|Invalid credentials|Authentication failed/i.test(String(err?.message));

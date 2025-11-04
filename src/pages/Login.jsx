@@ -19,7 +19,10 @@ export default function Login() {
         localStorage.setItem("user", JSON.stringify(res.data.user));
       }
       const role = res.data?.role || localStorage.getItem("role");
-      if (role === "doctor") {
+      const profileCompleted = Boolean(res.data?.user?.profileCompleted);
+      if (!profileCompleted) {
+        navigate("/profile-setup", { replace: true });
+      } else if (role === "doctor") {
         navigate("/doctor", { replace: true });
       } else {
         // default to patient if role missing or unrecognized
@@ -27,7 +30,7 @@ export default function Login() {
       }
       // Hard-redirect fallback if SPA navigation is blocked
       setTimeout(() => {
-        const pathname = role === "doctor" ? "/doctor" : "/patient";
+        const pathname = !profileCompleted ? "/profile-setup" : role === "doctor" ? "/doctor" : "/patient";
         if (window.location.pathname !== pathname) {
           window.location.href = pathname;
         }
@@ -35,6 +38,9 @@ export default function Login() {
     } catch (err) {
       alert(err.response?.data?.message || "Login failed");
     }
+
+    
+
   };
 
    return (
@@ -66,6 +72,11 @@ export default function Login() {
         <p className="switch">
           Dont have an account? <a href="/signup">Sign up</a>
         </p>
+
+        <p className="switch">
+          Forgot Password? <a href="/forget">Reset Password</a>
+        </p>
+
       </div>
     </div>
   );

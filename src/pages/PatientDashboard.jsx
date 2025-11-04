@@ -4,10 +4,20 @@ import "../auth.css";
 
 const PatientDashboard = () => {
   const patient = JSON.parse(localStorage.getItem("user"));
+  const avatar = patient?.avatarUrl
+    ? (patient.avatarUrl.startsWith("http") ? patient.avatarUrl : `http://localhost:5000${patient.avatarUrl}`)
+    : "";
 
   return (
     <div className="dashboard">
       <div className="dashboard-card">
+        {avatar && (
+          <img
+            src={avatar}
+            alt="avatar"
+            style={{ width: 96, height: 96, borderRadius: 12, objectFit: "cover", marginBottom: 12 }}
+          />
+        )}
         <h1>🧍‍♂️ Patient Dashboard</h1>
         <p>Welcome, {patient?.name || "User"}!</p>
         <p>Your email: {patient?.email}</p>

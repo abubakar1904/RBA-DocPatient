@@ -3,6 +3,8 @@ import express from "express";              //main structure of express includes
 import cors from "cors";                    //Middleware is essentially functions and methods that get executed sequentially
 import dotenv from "dotenv"                 //Routing is more of how your response cycle works, how your app responds to client req
 import connectDB from "./config/db.js";
+import path from "path";
+import { fileURLToPath } from "url";
 import authRoutes from "./routes/authRoutes.js"
 
 dotenv.config();
@@ -13,6 +15,10 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 app.use("/api/auth", authRoutes);
+// serve uploaded files
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 //routing
 app.get("/", (req, res) => {

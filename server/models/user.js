@@ -8,6 +8,12 @@ const userSchema = new mongoose.Schema({
   verified: { type: Boolean, default: false },
   otp: String,
   otpExpires: Date,
+  resetToken: String,
+  resetExpires: Date,
+  profileCompleted: { type: Boolean, default: false },
+  avatarUrl: String,
+  phone: String,
+  bio: String,
 });
 
 export default mongoose.model("User", userSchema);
