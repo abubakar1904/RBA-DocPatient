@@ -45,6 +45,17 @@ form {
   gap: 1rem;
 }
 
+label.required-label {
+  color: #1e293b;
+  font-size: 0.9rem;
+  margin-bottom: -0.5rem;
+}
+
+.required-asterisk {
+  color: #ef4444;
+  margin-left: 4px;
+}
+
 input,
 select {
   padding: 0.75rem 1rem;
@@ -61,6 +72,18 @@ select:focus {
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
 }
 
+.error-input {
+  border-color: #ef4444 !important;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.2) !important;
+}
+
+.error-text {
+  color: #ef4444;
+  font-size: 0.85rem;
+  margin-top: -0.5rem;
+  margin-bottom: 0.5rem;
+}
+
 button {
   background: #3b82f6;
   color: white;
@@ -74,6 +97,12 @@ button {
 
 button:hover {
   background: #2563eb;
+}
+
+button:disabled {
+  opacity: 0.6;
+  filter: blur(0.4px);
+  cursor: not-allowed;
 }
 
 .switch {

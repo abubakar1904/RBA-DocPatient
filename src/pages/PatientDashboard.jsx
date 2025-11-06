@@ -1,36 +1,23 @@
-// src/pages/PatientDashboard.jsx
 import React from "react";
+import { useAuthStore } from "../store/authStore";
+import ProfileDropdown from "../components/ProfileDropdown";
 import "../auth.css";
 
 const PatientDashboard = () => {
-  const patient = JSON.parse(localStorage.getItem("user"));
-  const avatar = patient?.avatarUrl
-    ? (patient.avatarUrl.startsWith("http") ? patient.avatarUrl : `http://localhost:5000${patient.avatarUrl}`)
-    : "";
+  const { user } = useAuthStore();
 
   return (
     <div className="dashboard">
+      <div style={{ position: "absolute", top: "1rem", right: "1rem" }}>
+        <ProfileDropdown />
+      </div>
       <div className="dashboard-card">
-        {avatar && (
-          <img
-            src={avatar}
-            alt="avatar"
-            style={{ width: 96, height: 96, borderRadius: 12, objectFit: "cover", marginBottom: 12 }}
-          />
-        )}
         <h1>🧍‍♂️ Patient Dashboard</h1>
-        <p>Welcome, {patient?.name || "User"}!</p>
-        <p>Your email: {patient?.email}</p>
-        <p>Role: {patient?.role}</p>
-
-        <button
-          onClick={() => {
-            localStorage.clear();
-            window.location.href = "/login";
-          }}
-        >
-          Logout
-        </button>
+        <p>Welcome, {user?.name || "User"}!</p>
+        <p>Your email: {user?.email}</p>
+        <p>Role: {user?.role}</p>
+        {user?.phone && <p>Phone: {user.phone}</p>}
+        {user?.bio && <p>Bio: {user.bio}</p>}
       </div>
     </div>
   );

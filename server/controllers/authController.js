@@ -50,30 +50,85 @@ export const verifyOtp = async (req, res) => {
 };
 
 export const login = async (req, res) => {
-  const { email, password } = req.body;
-  const user = await User.findOne({ email });
-  if (!user) return res.status(400).json({ message: "User not found" });
-  if (!user.verified) return res.status(400).json({ message: "Email not verified" });
+  try {
+    const { email, password } = req.body;
+    if (!email || !password) {
+      return res.status(400).json({ message: "Email and password are required" });
+    }
 
-  const match = await bcrypt.compare(password, user.password);
-  if (!match) return res.status(400).json({ message: "Invalid password" });
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(401).json({ message: "Invalid email or password" });
+    }
+    
+    if (!user.verified) {
+      return res.status(403).json({ message: "Email not verified. Please verify your email first.", email: user.email });
+    }
 
-  const token = jwt.sign(
-    { id: user._id, role: user.role },
-    process.env.JWT_SECRET,
-    { expiresIn: "1h" }
-  );
+    const match = await bcrypt.compare(password, user.password);
+    if (!match) {
+      return res.status(401).json({ message: "Invalid email or password" });
+    }
 
-  const userInfo = { name: user.name, email: user.email, role: user.role, profileCompleted: !!user.profileCompleted, avatarUrl: user.avatarUrl };
-  res.json({ message: "Login successful", token, role: user.role, user: userInfo });
+    const token = jwt.sign(
+      { id: user._id, role: user.role },
+      process.env.JWT_SECRET,
+      { expiresIn: "1h" }
+    );
+
+    const userInfo = { name: user.name, email: user.email, role: user.role, profileCompleted: !!user.profileCompleted, avatarUrl: user.avatarUrl };
+    res.json({ message: "Login successful", token, role: user.role, user: userInfo });
+  } catch (err) {
+    res.status(500).json({ message: err.message || "Login failed" });
+  }
+};
+
+export const resendOtp = async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email) {
+      return res.status(400).json({ message: "Email is required" });
+    }
+
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    if (user.verified) {
+      return res.status(400).json({ message: "Email already verified" });
+    }
+
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    user.otp = otp;
+    user.otpExpires = new Date(Date.now() + 5 * 60 * 1000);
+    await user.save();
+
+    const { previewUrl } = await sendEmail(email, "Verify OTP", `Your OTP is ${otp}`);
+
+    if (process.env.NODE_ENV !== "production") {
+      return res.json({ message: "OTP resent to email", previewUrl, devOtp: otp });
+    }
+
+    res.json({ message: "OTP resent to email" });
+  } catch (err) {
+    res.status(500).json({ message: err.message || "Failed to resend OTP" });
+  }
 };
 
 // Forgot password: send reset link
-export const forgotPassword = async (req, res) => {
+export const forgotPassword = async (req,res) => {
   try {
     const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({ message: "Email is required" });
+    }
+
     const user = await User.findOne({ email });
-    if (!user) return res.status(200).json({ message: "If the email exists, a reset link has been sent" });
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
 
     const token = crypto.randomBytes(32).toString("hex");
     user.resetToken = token;
@@ -82,9 +137,10 @@ export const forgotPassword = async (req, res) => {
 
     const resetUrl = `${process.env.CLIENT_URL || "http://localhost:5173"}/reset?token=${token}`;
     await sendEmail(user.email, "Password Reset", `Reset your password: ${resetUrl}`);
-    res.json({ message: "Reset link sent if the email exists" });
+
+    return res.json({ message: "Reset link sent to your email" });
   } catch (err) {
-    res.status(500).json({ message: err.message || "Failed to send reset email" });
+    return res.status(500).json({ message: err.message || "Failed to send reset email" });
   }
 };
 

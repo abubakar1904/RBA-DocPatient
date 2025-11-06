@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import Home from "./pages/Home";
 import Signup from "./pages/Signup";
 import VerifyOtp from "./pages/VerifyOtp";
 import Login from "./pages/Login";
@@ -9,18 +10,26 @@ import DoctorDashboard from "./pages/DoctorDashboard";
 import PatientDashboard from "./pages/PatientDashboard";
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
 import RoleBasedRoute from "./components/RoleBasedRoute";
+import AuthGuard from "./components/AuthGuard";
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<h1>Welcome to Role Based Authentication of Doctor and Patient</h1>} />
-        <Route path="/signup" element={<Signup />} />
-        <Route path="/verify-otp" element={<VerifyOtp />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/forget" element={<ForgotPassword />} />
+        <Route path="/" element={<Home />} />
+        <Route path="/signup" element={<AuthGuard><Signup /></AuthGuard>} />
+        <Route path="/verify-otp" element={<AuthGuard><VerifyOtp /></AuthGuard>} />
+        <Route path="/login" element={<AuthGuard><Login /></AuthGuard>} />
+        <Route path="/forget" element={<AuthGuard><ForgotPassword /></AuthGuard>} />
         <Route path="/reset" element={<ResetPassword />} />
-        <Route path="/profile-setup" element={<ProfileSetup />} />
+        <Route
+          path="/profile-setup"
+          element={
+            <ProtectedRoute>
+              <ProfileSetup />
+            </ProtectedRoute>
+          }
+        />
 
         <Route
           path="/doctor"
