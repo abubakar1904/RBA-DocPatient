@@ -1,5 +1,5 @@
 import express from "express";
-import { signup, verifyOtp, login, forgotPassword, resetPassword, updateProfile, me, resendOtp } from "../controllers/authController.js";
+import { signup, verifyOtp, login, forgotPassword, resetPassword, updateProfile, me, resendOtp, updateDoctorProfile, listDoctors, listPatients, makeAdmin } from "../controllers/authController.js";
 import { verifyToken } from "../middleware/auth.js";
 import { authorizeRoles } from "../middleware/role.js";
 import { upload } from "../utils/upload.js";
@@ -14,6 +14,10 @@ router.post("/forgot-password", forgotPassword);
 router.post("/reset-password", resetPassword);
 router.get("/me", verifyToken, me);
 router.post("/profile", verifyToken, upload.single("avatar"), updateProfile);
+router.post("/doctor-profile", verifyToken, authorizeRoles("doctor"), updateDoctorProfile);
+router.get("/doctors", listDoctors);
+router.get("/patients", verifyToken, authorizeRoles("admin"), listPatients);
+router.post("/make-admin", makeAdmin);
 
 // Protected example:
 router.get("/doctor-dashboard", verifyToken, authorizeRoles("doctor"), (req, res) => {

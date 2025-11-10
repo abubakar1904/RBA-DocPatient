@@ -80,7 +80,8 @@ export default function ProfileSetup() {
       toast.success("Profile updated successfully");
       const role = useAuthStore.getState().role;
       setTimeout(() => {
-        navigate(role === "doctor" ? "/doctor" : "/patient");
+        const destination = role === "doctor" ? "/doctor" : role === "admin" ? "/admin" : "/patient";
+        navigate(destination);
       }, 1000);
     } catch (err) {
       toast.error(err.response?.data?.message || "Failed to update profile");

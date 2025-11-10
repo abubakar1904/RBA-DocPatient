@@ -151,3 +151,219 @@ button:disabled {
 .dashboard-card button {
   margin-top: 1rem;
 }
+
+/* Doctors directory */
+.directory-wrapper {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  padding: 3rem 0 4rem;
+}
+
+.directory-card {
+  width: min(900px, 92vw);
+  background: #ffffff;
+  border-radius: 24px;
+  padding: 2.5rem 3rem;
+  box-shadow: 0 20px 60px rgba(15, 23, 42, 0.12);
+  position: relative;
+}
+
+.directory-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.directory-filter label {
+  font-size: 0.85rem;
+  color: #64748b;
+  margin-right: 0.5rem;
+}
+
+.directory-filter select {
+  min-width: 180px;
+  padding: 0.55rem 0.8rem;
+}
+
+.directory-grid {
+  margin-top: 2rem;
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+}
+
+.doctor-card {
+  border: 1px solid #e2e8f0;
+  border-radius: 18px;
+  padding: 1.25rem;
+  background: #ffffff;
+  cursor: pointer;
+  transition: border 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.doctor-card--active {
+  border: 2px solid #2563eb;
+  background: linear-gradient(135deg, #eff6ff 0%, #ffffff 50%, #ecfeff 100%);
+  box-shadow: 0 12px 30px rgba(37, 99, 235, 0.18);
+  transform: translateY(-2px);
+}
+
+.doctor-card__avatar {
+  width: 52px;
+  height: 52px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #2563eb 0%, #60a5fa 100%);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+
+.doctor-card__fee {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.9rem;
+  color: #0f172a;
+  font-weight: 600;
+  margin-top: 0.25rem;
+}
+
+.directory-divider {
+  margin-top: 2.5rem;
+  padding-top: 1.75rem;
+  border-top: 1px dashed #cbd5f5;
+}
+
+.directory-scheduler {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.75rem;
+}
+
+.directory-calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+  gap: 0.75rem;
+  margin-top: 0.9rem;
+}
+
+.directory-calendar-button {
+  padding: 0.75rem 0.6rem;
+  border-radius: 14px;
+  border: 1px solid #cbd5f5;
+  background: #ffffff;
+  color: #1e293b;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.directory-calendar-button--active {
+  border-color: #2563eb;
+  background: #2563eb;
+  color: #ffffff;
+  box-shadow: 0 10px 25px rgba(37, 99, 235, 0.25);
+}
+
+.directory-slots-grid {
+  margin-top: 1rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+  gap: 0.75rem;
+}
+
+.directory-slot-button {
+  padding: 0.65rem 0.5rem;
+  border-radius: 12px;
+  border: 1px solid #94a3b8;
+  background: #f8fafc;
+  color: #1e293b;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.directory-slot-button--active {
+  border-color: #2563eb;
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+  color: #ffffff;
+  box-shadow: 0 10px 30px rgba(37, 99, 235, 0.3);
+}
+
+.directory-selection-banner {
+  margin-top: 1rem;
+  padding: 0.9rem 1.1rem;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+  color: #065f46;
+  font-weight: 500;
+}
+
+.booking-modal__overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.45);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  padding: 1rem;
+}
+
+.booking-modal__card {
+  width: min(420px, 92vw);
+  background: #ffffff;
+  border-radius: 20px;
+  padding: 2rem;
+  box-shadow: 0 25px 70px rgba(15, 23, 42, 0.28);
+}
+
+.booking-modal__header {
+  margin-top: 0;
+  font-size: 1.35rem;
+  font-weight: 600;
+  color: #0f172a;
+  margin-bottom: 0.5rem;
+}
+
+.booking-modal__subtitle {
+  margin: 0;
+  margin-bottom: 1.1rem;
+  color: #475569;
+  font-size: 0.95rem;
+}
+
+.booking-modal__form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.15rem;
+}
+
+.booking-modal__footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}
+
+.booking-modal__cancel {
+  background: transparent;
+  color: #475569;
+  border: 1px solid #cbd5f5;
+  padding: 0.7rem 1.1rem;
+  border-radius: 10px;
+}
+
+.booking-modal__confirm {
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+  color: #ffffff;
+  padding: 0.7rem 1.2rem;
+  border-radius: 10px;
+}

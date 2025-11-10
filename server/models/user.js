@@ -4,7 +4,7 @@ const userSchema = new mongoose.Schema({
   name: String,
   email: { type: String, unique: true },
   password: String,
-  role: { type: String, enum: ["doctor", "patient"], default: "patient" },
+  role: { type: String, enum: ["doctor", "patient", "admin"], default: "patient" },
   verified: { type: Boolean, default: false },
   otp: String,
   otpExpires: Date,
@@ -14,6 +14,23 @@ const userSchema = new mongoose.Schema({
   avatarUrl: String,
   phone: String,
   bio: String,
-});
+  doctorDetails: {
+    certificateNumber: String,
+    qualifications: String,
+    categories: [String],
+    specialities: [String],
+    clinicName: String,
+    clinicAddress: String,
+    yearsOfExperience: Number,
+    consultationFee: Number,
+    availability: {
+      days: [String],
+      startTime: String,
+      endTime: String,
+      slotDuration: Number,
+      slotsPerDay: Number,
+    },
+  },
+}, { timestamps: true });
 
 export default mongoose.model("User", userSchema);

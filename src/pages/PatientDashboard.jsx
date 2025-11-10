@@ -1,9 +1,11 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import { useAuthStore } from "../store/authStore";
 import ProfileDropdown from "../components/ProfileDropdown";
 import "../auth.css";
 
 const PatientDashboard = () => {
+  const navigate = useNavigate();
   const { user } = useAuthStore();
 
   return (
@@ -18,6 +20,14 @@ const PatientDashboard = () => {
         <p>Role: {user?.role}</p>
         {user?.phone && <p>Phone: {user.phone}</p>}
         {user?.bio && <p>Bio: {user.bio}</p>}
+        <button
+          style={{ marginTop: "1rem" }}
+          onClick={() => {
+            navigate("/patient/doctors");
+          }}
+        >
+          Browse Doctors
+        </button>
       </div>
     </div>
   );

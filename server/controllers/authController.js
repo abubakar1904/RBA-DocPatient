@@ -76,7 +76,7 @@ export const login = async (req, res) => {
       { expiresIn: "1h" }
     );
 
-    const userInfo = { name: user.name, email: user.email, role: user.role, profileCompleted: !!user.profileCompleted, avatarUrl: user.avatarUrl };
+    const userInfo = { name: user.name, email: user.email, role: user.role, profileCompleted: !!user.profileCompleted, avatarUrl: user.avatarUrl, doctorDetails: user.doctorDetails };
     res.json({ message: "Login successful", token, role: user.role, user: userInfo });
   } catch (err) {
     res.status(500).json({ message: err.message || "Login failed" });
@@ -188,11 +188,108 @@ export const updateProfile = async (req, res) => {
       avatarUrl: user.avatarUrl,
       phone: user.phone,
       bio: user.bio,
+      doctorDetails: user.doctorDetails,
     };
 
     res.json({ message: "Profile updated", user: userInfo });
   } catch (err) {
     res.status(500).json({ message: err.message || "Failed to update profile" });
+  }
+};
+
+// Update doctor profile details (doctor only)
+export const updateDoctorProfile = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const {
+      certificateNumber,
+      qualifications,
+      categories,
+      specialities,
+      clinicName,
+      clinicAddress,
+      yearsOfExperience,
+      consultationFee,
+      availability,
+    } = req.body;
+
+    const toArray = (value) => {
+      if (!value) return undefined;
+      if (Array.isArray(value)) return value.filter(Boolean);
+      if (typeof value === "string")
+        return value
+          .split(",")
+          .map((item) => item.trim())
+          .filter(Boolean);
+      return undefined;
+    };
+
+    const availabilityPayload = availability || {};
+    const days = toArray(availabilityPayload.days);
+
+    const updates = {
+      profileCompleted: true,
+      doctorDetails: {
+        certificateNumber,
+        qualifications,
+        categories: toArray(categories),
+        specialities: toArray(specialities),
+        clinicName,
+        clinicAddress,
+        yearsOfExperience: yearsOfExperience !== undefined && yearsOfExperience !== "" ? Number(yearsOfExperience) : undefined,
+        consultationFee: consultationFee !== undefined && consultationFee !== "" ? Number(consultationFee) : undefined,
+        availability: {
+          days,
+          startTime: availabilityPayload.startTime || undefined,
+          endTime: availabilityPayload.endTime || undefined,
+          slotDuration:
+            availabilityPayload.slotDuration !== undefined && availabilityPayload.slotDuration !== ""
+              ? Number(availabilityPayload.slotDuration)
+              : undefined,
+          slotsPerDay:
+            availabilityPayload.slotsPerDay !== undefined && availabilityPayload.slotsPerDay !== ""
+              ? Number(availabilityPayload.slotsPerDay)
+              : undefined,
+        },
+      },
+    };
+
+    // Remove undefined keys from nested object
+    Object.keys(updates.doctorDetails).forEach((k) => updates.doctorDetails[k] === undefined && delete updates.doctorDetails[k]);
+    if (updates.doctorDetails.availability) {
+      Object.keys(updates.doctorDetails.availability).forEach(
+        (k) => updates.doctorDetails.availability[k] === undefined && delete updates.doctorDetails.availability[k]
+      );
+      if (
+        Object.keys(updates.doctorDetails.availability).length === 0 ||
+        !updates.doctorDetails.availability.days ||
+        updates.doctorDetails.availability.days.length === 0
+      ) {
+        delete updates.doctorDetails.availability;
+      }
+    }
+
+    const user = await User.findByIdAndUpdate(
+      userId,
+      { $set: updates },
+      { new: true }
+    );
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    const userInfo = {
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      profileCompleted: !!user.profileCompleted,
+      avatarUrl: user.avatarUrl,
+      phone: user.phone,
+      bio: user.bio,
+      doctorDetails: user.doctorDetails,
+    };
+
+    res.json({ message: "Doctor profile updated", user: userInfo });
+  } catch (err) {
+    res.status(500).json({ message: err.message || "Failed to update doctor profile" });
   }
 };
 
@@ -209,10 +306,94 @@ export const me = async (req, res) => {
       avatarUrl: user.avatarUrl,
       phone: user.phone,
       bio: user.bio,
+      doctorDetails: user.doctorDetails,
     };
     res.json({ user: userInfo });
   } catch (err) {
     res.status(500).json({ message: err.message || "Failed to load profile" });
+  }
+};
+
+export const listDoctors = async (req, res) => {
+  try {
+    const { speciality } = req.query;
+    const filter = { role: "doctor", profileCompleted: true };
+    if (speciality) {
+      const specials = Array.isArray(speciality)
+        ? speciality
+        : speciality.split(",").map((item) => item.trim()).filter(Boolean);
+      if (specials.length > 0) {
+        filter["doctorDetails.specialities"] = { $in: specials };
+      }
+    }
+
+    const doctors = await User.find(filter).select(
+      "name email avatarUrl doctorDetails.certificateNumber doctorDetails.qualifications doctorDetails.categories doctorDetails.specialities doctorDetails.availability doctorDetails.clinicName doctorDetails.clinicAddress doctorDetails.consultationFee"
+    );
+
+    const result = doctors.map((doc) => ({
+      id: doc._id,
+      name: doc.name,
+      email: doc.email,
+      avatarUrl: doc.avatarUrl,
+      certificateNumber: doc.doctorDetails?.certificateNumber,
+      qualifications: doc.doctorDetails?.qualifications,
+      categories: doc.doctorDetails?.categories || [],
+      specialities: doc.doctorDetails?.specialities || [],
+      clinicName: doc.doctorDetails?.clinicName,
+      clinicAddress: doc.doctorDetails?.clinicAddress,
+      consultationFee: doc.doctorDetails?.consultationFee,
+      availability: doc.doctorDetails?.availability || {},
+    }));
+
+    const allSpecialities = Array.from(
+      new Set(result.flatMap((doc) => doc.specialities || []))
+    ).sort();
+
+    res.json({ doctors: result, specialities: allSpecialities });
+  } catch (err) {
+    res.status(500).json({ message: err.message || "Failed to load doctors" });
+  }
+};
+
+export const listPatients = async (req, res) => {
+  try {
+    const patients = await User.find({ role: "patient" }).select(
+      "name email avatarUrl phone bio profileCompleted createdAt"
+    );
+
+    const result = patients.map((patient) => ({
+      id: patient._id,
+      name: patient.name,
+      email: patient.email,
+      avatarUrl: patient.avatarUrl,
+      phone: patient.phone,
+      bio: patient.bio,
+      profileCompleted: !!patient.profileCompleted,
+      joinedAt: patient.createdAt,
+    }));
+
+    res.json({ patients: result });
+  } catch (err) {
+    res.status(500).json({ message: err.message || "Failed to load patients" });
+  }
+};
+
+// Elevate a user's role to admin (secured by setup token)
+export const makeAdmin = async (req, res) => {
+  try {
+    const { email, token } = req.body;
+    if (!email || !token) {
+      return res.status(400).json({ message: "Email and token are required" });
+    }
+    if (!process.env.ADMIN_SETUP_TOKEN || token !== process.env.ADMIN_SETUP_TOKEN) {
+      return res.status(401).json({ message: "Invalid setup token" });
+    }
+    const user = await User.findOneAndUpdate({ email }, { role: "admin" }, { new: true });
+    if (!user) return res.status(404).json({ message: "User not found" });
+    res.json({ message: "User promoted to admin", user: { email: user.email, role: user.role } });
+  } catch (err) {
+    res.status(500).json({ message: err.message || "Failed to promote user" });
   }
 };
 

@@ -1,17 +1,19 @@
 import { Navigate } from "react-router-dom";
 import { useAuthStore } from "../store/authStore";
 
-export default function RoleBasedRoute({ allowedRole, children }) {
+export default function RoleBasedRoute({ allowedRole, allowedRoles, children }) {
   const { role, user } = useAuthStore();
-  
-  if (role !== allowedRole) {
+
+  const rolesToCheckRaw = allowedRoles ?? allowedRole;
+  const rolesToCheck = Array.isArray(rolesToCheckRaw) ? rolesToCheckRaw : [rolesToCheckRaw];
+
+  if (!rolesToCheck.includes(role)) {
     return <Navigate to="/" replace />;
   }
-  
-  // If profile not completed, redirect to profile setup
-  if (!user?.profileCompleted) {
+
+  if ((role === "doctor" || role === "patient") && !user?.profileCompleted) {
     return <Navigate to="/profile-setup" replace />;
   }
-  
+
   return children;
 }

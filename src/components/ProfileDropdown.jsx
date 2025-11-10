@@ -93,6 +93,72 @@ export default function ProfileDropdown() {
           >
             Edit Profile
           </button>
+          {user?.role === "doctor" && (
+            <button
+              onClick={() => {
+                setIsOpen(false);
+                navigate("/doctor/profile");
+              }}
+              style={{
+                width: "100%",
+                padding: "10px 16px",
+                background: "none",
+                border: "none",
+                textAlign: "left",
+                cursor: "pointer",
+                fontSize: "14px",
+                color: "#1e293b",
+              }}
+              onMouseEnter={(e) => (e.target.style.background = "#f1f5f9")}
+              onMouseLeave={(e) => (e.target.style.background = "none")}
+            >
+              Doctor Profile
+            </button>
+          )}
+          {user?.role === "patient" && (
+            <button
+              onClick={() => {
+                setIsOpen(false);
+                navigate("/patient/doctors");
+              }}
+              style={{
+                width: "100%",
+                padding: "10px 16px",
+                background: "none",
+                border: "none",
+                textAlign: "left",
+                cursor: "pointer",
+                fontSize: "14px",
+                color: "#1e293b",
+              }}
+              onMouseEnter={(e) => (e.target.style.background = "#f1f5f9")}
+              onMouseLeave={(e) => (e.target.style.background = "none")}
+            >
+              Find Doctors
+            </button>
+          )}
+          {user?.role === "admin" && (
+            <button
+              onClick={() => {
+                setIsOpen(false);
+                navigate("/admin");
+              }}
+              style={{
+                width: "100%",
+                padding: "10px 16px",
+                background: "none",
+                border: "none",
+                textAlign: "left",
+                cursor: "pointer",
+                fontSize: "14px",
+                color: "#1e293b",
+              }}
+              onMouseEnter={(e) => (e.target.style.background = "#f1f5f9")}
+              onMouseLeave={(e) => (e.target.style.background = "none")}
+            >
+              Admin Dashboard
+            </button>
+          )}
           <button
             onClick={handleLogout}
             style={{
@@ -115,4 +181,5 @@ export default function ProfileDropdown() {
     </div>
   );
 }
+
 

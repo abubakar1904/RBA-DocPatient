@@ -3,6 +3,7 @@ import { useAuthStore } from "../store/authStore";
 import ProfileDropdown from "../components/ProfileDropdown";
 import "../auth.css";
 
+
 export default function Home() {
   const { isAuthenticated } = useAuthStore();
 
@@ -65,4 +66,5 @@ export default function Home() {
     </div>
   );
 }
+
 

@@ -9,13 +9,18 @@ export default function AuthGuard({ children }) {
     const role = useAuthStore.getState().role;
     const user = useAuthStore.getState().user;
     
-    if (!user?.profileCompleted) {
+    if ((role === "doctor" || role === "patient") && !user?.profileCompleted) {
       return <Navigate to="/profile-setup" replace />;
     }
     
-    return <Navigate to={role === "doctor" ? "/doctor" : "/patient"} replace />;
+    if (role === "doctor") return <Navigate to="/doctor" replace />;
+    if (role === "patient") return <Navigate to="/patient" replace />;
+    if (role === "admin") return <Navigate to="/admin" replace />;
+
+    return <Navigate to="/" replace />;
   }
   
   return children;
 }
+
 
