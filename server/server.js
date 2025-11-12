@@ -8,6 +8,11 @@ import { fileURLToPath } from "url";
 import authRoutes from "./routes/authRoutes.js"
 import appointmentRoutes from "./routes/appointmentRoutes.js"
 import webhookRouter from "./routes/webhook.js";
+import categoryAdminRoutes from "./routes/taxonomy/categoryAdminRoutes.js";
+import specialityAdminRoutes from "./routes/taxonomy/specialityAdminRoutes.js";
+import settingsAdminRoutes from "./routes/taxonomy/settingsAdminRoutes.js";
+import metaPublicRoutes from "./routes/taxonomy/metaPublicRoutes.js";
+import userAdminRoutes from "./routes/admin/userAdminRoutes.js";
 
 dotenv.config();
 
@@ -15,10 +20,19 @@ const app = express();
 
 //middleware
 app.use(cors());
+
+// Webhook route must be BEFORE express.json() to receive raw body for signature verification
+app.use("/api", webhookRouter);
+
+// JSON parsing for other routes
 app.use(express.json());
 app.use("/api/auth", authRoutes);
 app.use("/api/appointments", appointmentRoutes);
-app.use("/api", webhookRouter);
+app.use("/api/admin/meta", categoryAdminRoutes);
+app.use("/api/admin/meta", specialityAdminRoutes);
+app.use("/api/admin/meta", settingsAdminRoutes);
+app.use("/api/meta", metaPublicRoutes);
+app.use("/api/admin", userAdminRoutes);
 
 // serve uploaded files
 const __filename = fileURLToPath(import.meta.url);

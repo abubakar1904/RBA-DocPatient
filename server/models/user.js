@@ -6,6 +6,8 @@ const userSchema = new mongoose.Schema({
   password: String,
   role: { type: String, enum: ["doctor", "patient", "admin"], default: "patient" },
   verified: { type: Boolean, default: false },
+  active: { type: Boolean, default: true },
+  approved: { type: Boolean, default: false }, // for doctors approval workflow
   otp: String,
   otpExpires: Date,
   resetToken: String,

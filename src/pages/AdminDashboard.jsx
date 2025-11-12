@@ -6,6 +6,38 @@ import ProfileDropdown from "../components/ProfileDropdown";
 import { useAuthStore } from "../store/authStore";
 import "../auth.css";
 
+const CATEGORY_OPTIONS = [
+  "Primary Care",
+  "Specialist",
+  "Surgery",
+  "Telemedicine",
+  "Wellness",
+];
+
+const SPECIALITY_OPTIONS = [
+  "Cardiology",
+  "Dermatology",
+  "Endocrinology",
+  "Gastroenterology",
+  "Neurology",
+  "Orthopedics",
+  "Pediatrics",
+  "Psychiatry",
+  "Radiology",
+  "Urology",
+];
+
+const DAY_OPTIONS = [
+  "Monday",
+  "Tuesday",
+  "Wednesday",
+  "Thursday",
+  "Friday",
+  "Saturday",
+  "Sunday",
+];
+
+
 const DoctorCard = ({ doctor }) => (
   <div
     style={{

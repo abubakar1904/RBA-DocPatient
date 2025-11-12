@@ -20,14 +20,22 @@ const PatientDashboard = () => {
         <p>Role: {user?.role}</p>
         {user?.phone && <p>Phone: {user.phone}</p>}
         {user?.bio && <p>Bio: {user.bio}</p>}
-        <button
-          style={{ marginTop: "1rem" }}
-          onClick={() => {
-            navigate("/patient/doctors");
-          }}
-        >
-          Browse Doctors
-        </button>
+        <div style={{ display: "flex", gap: "1rem", marginTop: "1rem", flexWrap: "wrap" }}>
+          <button
+            onClick={() => {
+              navigate("/patient/doctors");
+            }}
+          >
+            Browse Doctors
+          </button>
+          <button
+            onClick={() => {
+              navigate("/patient/appointments");
+            }}
+          >
+            My Appointments
+          </button>
+        </div>
       </div>
     </div>
   );

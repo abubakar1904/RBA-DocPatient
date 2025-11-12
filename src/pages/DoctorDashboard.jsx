@@ -1,9 +1,11 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import { useAuthStore } from "../store/authStore";
 import ProfileDropdown from "../components/ProfileDropdown";
 import "../auth.css";
 
 const DoctorDashboard = () => {
+  const navigate = useNavigate();
   const { user } = useAuthStore();
 
   return (
@@ -73,6 +75,23 @@ const DoctorDashboard = () => {
             )}
           </div>
         )}
+
+        <div style={{ display: "flex", gap: "1rem", marginTop: "1.5rem", flexWrap: "wrap" }}>
+          <button
+            onClick={() => {
+              navigate("/doctor/profile");
+            }}
+          >
+            Edit Profile
+          </button>
+          <button
+            onClick={() => {
+              navigate("/doctor/bookings");
+            }}
+          >
+            My Bookings
+          </button>
+        </div>
       </div>
     </div>
   );

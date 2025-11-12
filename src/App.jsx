@@ -14,6 +14,14 @@ import AuthGuard from "./components/AuthGuard";
 import DoctorProfile from "./pages/DoctorProfile.jsx";
 import DoctorsDirectory from "./pages/DoctorsDirectory.jsx";
 import AdminDashboard from "./pages/AdminDashboard.jsx";
+import AdminTaxonomy from "./pages/AdminTaxonomy.jsx";
+import AdminUsers from "./pages/AdminUsers.jsx";
+import AdminDoctors from "./pages/AdminDoctors.jsx";
+import AdminDoctorDetail from "./pages/AdminDoctorDetail.jsx";
+import PaymentSuccess from "./pages/PaymentSuccess.jsx";
+import PaymentCancelled from "./pages/PaymentCancelled.jsx";
+import PatientAppointments from "./pages/PatientAppointments.jsx";
+import DoctorBookings from "./pages/DoctorBookings.jsx";
 import HomeLayout from "./layout/homeLayout.jsx";
 
 function App() {
@@ -56,6 +64,16 @@ function App() {
             }
           />
           <Route
+            path="/doctor/bookings"
+            element={
+              <ProtectedRoute>
+                <RoleBasedRoute allowedRole="doctor">
+                  <DoctorBookings />
+                </RoleBasedRoute>
+              </ProtectedRoute>
+            }
+          />
+          <Route
             path="/patient"
             element={
               <ProtectedRoute>
@@ -76,12 +94,78 @@ function App() {
             }
           />
           <Route
+            path="/patient/appointments"
+            element={
+              <ProtectedRoute>
+                <RoleBasedRoute allowedRole="patient">
+                  <PatientAppointments />
+                </RoleBasedRoute>
+              </ProtectedRoute>
+            }
+          />
+          <Route
             path="/admin"
             element={
               <ProtectedRoute>
                 <RoleBasedRoute allowedRole="admin">
                   <AdminDashboard />
                 </RoleBasedRoute>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/users"
+            element={
+              <ProtectedRoute>
+                <RoleBasedRoute allowedRole="admin">
+                  <AdminUsers />
+                </RoleBasedRoute>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/doctors"
+            element={
+              <ProtectedRoute>
+                <RoleBasedRoute allowedRole="admin">
+                  <AdminDoctors />
+                </RoleBasedRoute>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/doctors/:id"
+            element={
+              <ProtectedRoute>
+                <RoleBasedRoute allowedRole="admin">
+                  <AdminDoctorDetail />
+                </RoleBasedRoute>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/taxonomy"
+            element={
+              <ProtectedRoute>
+                <RoleBasedRoute allowedRole="admin">
+                  <AdminTaxonomy />
+                </RoleBasedRoute>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/payment-success"
+            element={
+              <ProtectedRoute>
+                <PaymentSuccess />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/payment-cancelled"
+            element={
+              <ProtectedRoute>
+                <PaymentCancelled />
               </ProtectedRoute>
             }
           />

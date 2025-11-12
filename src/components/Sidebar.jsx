@@ -1,10 +1,7 @@
 import { NavLink } from "react-router-dom";
 import { useAuthStore } from "../store/authStore";
 
-const baseLinks = [
-  { to: "/", label: "Home" },
-  { to: "/patient/doctors", label: "Find Doctors" },
-];
+const baseLinks = [{ to: "/", label: "Home" }];
 
 const doctorLinks = [
   { to: "/doctor", label: "Doctor Dashboard" },
@@ -17,6 +14,9 @@ const patientLinks = [
 
 const adminLinks = [
   { to: "/admin", label: "Admin" },
+  { to: "/admin/users", label: "Admin Users" },
+  { to: "/admin/doctors", label: "Admin Doctors" },
+  { to: "/admin/taxonomy", label: "Admin Taxonomy" },
 ];
 
 const Sidebar = () => {
@@ -36,7 +36,10 @@ const Sidebar = () => {
       ? adminLinks
       : [];
 
-  const linksToRender = [...baseLinks, ...(isAuthenticated ? roleLinks : [])];
+  const computedBase =
+    role === "doctor" ? baseLinks : [...baseLinks, { to: "/patient/doctors", label: "Find Doctors" }];
+
+  const linksToRender = [...computedBase, ...(isAuthenticated ? roleLinks : [])];
 
   if (linksToRender.length === 0) {
     return null;

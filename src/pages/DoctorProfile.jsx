@@ -4,27 +4,6 @@ import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 import { useAuthStore } from "../store/authStore";
 
-const CATEGORY_OPTIONS = [
-  "Primary Care",
-  "Specialist",
-  "Surgery",
-  "Telemedicine",
-  "Wellness",
-];
-
-const SPECIALITY_OPTIONS = [
-  "Cardiology",
-  "Dermatology",
-  "Endocrinology",
-  "Gastroenterology",
-  "Neurology",
-  "Orthopedics",
-  "Pediatrics",
-  "Psychiatry",
-  "Radiology",
-  "Urology",
-];
-
 const DAY_OPTIONS = [
   "Monday",
   "Tuesday",
@@ -39,6 +18,8 @@ export default function DoctorProfile() {
   const navigate = useNavigate();
   const { token, user, updateUser } = useAuthStore();
   const [loading, setLoading] = useState(false);
+  const [categoryOptions, setCategoryOptions] = useState([]);
+  const [specialityOptions, setSpecialityOptions] = useState([]);
   const [form, setForm] = useState({
     certificateNumber: "",
     qualifications: "",
@@ -62,6 +43,29 @@ export default function DoctorProfile() {
       navigate("/login");
       return;
     }
+    // Fetch meta (categories, specialities, availability defaults)
+    (async () => {
+      try {
+        const res = await axios.get("http://localhost:5000/api/meta");
+        const { categories = [], specialities = [], availability } = res.data || {};
+        setCategoryOptions(categories);
+        setSpecialityOptions(specialities);
+        if (availability) {
+          setForm((prev) => ({
+            ...prev,
+            availability: {
+              days: availability.allowedDays || prev.availability.days,
+              startTime: availability.startTime || prev.availability.startTime,
+              endTime: availability.endTime || prev.availability.endTime,
+              slotDuration: String(availability.slotDuration ?? prev.availability.slotDuration),
+              slotsPerDay: prev.availability.slotsPerDay,
+            },
+          }));
+        }
+      } catch {
+        // non-blocking: keep hardcoded fallback already in form
+      }
+    })();
     const d = user?.doctorDetails || {};
     const availability = d.availability || {};
     setForm((prev) => ({
@@ -148,6 +152,7 @@ export default function DoctorProfile() {
       const res = await axios.post("http://localhost:5000/api/auth/doctor-profile", payload, {
         headers: { Authorization: `Bearer ${token}` },
       });
+      
       if (res.data?.user) updateUser(res.data.user);
       toast.success("Doctor profile saved");
       navigate("/doctor");
@@ -189,7 +194,7 @@ export default function DoctorProfile() {
 
           <label>Categories</label>
           <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
-            {CATEGORY_OPTIONS.map((category) => (
+            {(categoryOptions.length ? categoryOptions.map((c) => c.name) : form.categories).map((category) => (
               <label key={category} style={{ display: "flex", alignItems: "center", gap: "6px" }}>
                 <input
                   type="checkbox"
@@ -203,7 +208,7 @@ export default function DoctorProfile() {
 
           <label className="required-label">Specialities <span className="required-asterisk">*</span></label>
           <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
-            {SPECIALITY_OPTIONS.map((speciality) => (
+            {(specialityOptions.length ? specialityOptions.map((s) => s.name) : form.specialities).map((speciality) => (
               <label key={speciality} style={{ display: "flex", alignItems: "center", gap: "6px" }}>
                 <input
                   type="checkbox"

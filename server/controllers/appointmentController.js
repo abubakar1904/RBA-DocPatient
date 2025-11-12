@@ -2,6 +2,7 @@ import Appointment from "../models/appointment.js";
 import User from "../models/user.js";
 import dotenv from "dotenv";
 import Stripe from "stripe";
+import { sendEmail } from "../utils/sendEmail.js";
 
 dotenv.config();
 
@@ -29,6 +30,77 @@ const getDayName = (dateString) => {
 
 //adding stripe functionality
 export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+
+export const ensureAppointmentCreated = async ({
+  patientId,
+  doctorId,
+  date,
+  startTime,
+  reason,
+  age,
+  gender,
+  computedPrice,
+}) => {
+  if (!patientId || !doctorId || !date || !startTime) {
+    throw new Error("Missing required appointment metadata");
+  }
+
+  const doctor = await User.findById(doctorId);
+  if (!doctor || doctor.role !== "doctor") {
+    throw new Error("Doctor not found");
+  }
+
+  const duration = Number(doctor?.doctorDetails?.availability?.slotDuration) || 30;
+  const startMinutes = toMinutes(startTime);
+  const endMinutes = startMinutes + duration;
+  const endTime = toTimeString(endMinutes);
+
+  const appointmentDate = new Date(date);
+  appointmentDate.setHours(0, 0, 0, 0);
+
+  const existing = await Appointment.findOne({
+    doctor: doctorId,
+    date: appointmentDate,
+    startTime,
+  });
+
+  if (existing) {
+    return existing;
+  }
+
+  const appointment = await Appointment.create({
+    patient: patientId,
+    doctor: doctorId,
+    date: appointmentDate,
+    startTime,
+    endTime,
+    price: Number(computedPrice || doctor.doctorDetails?.consultationFee || 0),
+    reason: reason || "Consultation",
+    age: Number(age || 0),
+    gender: gender || "other",
+    status: "confirmed",
+  });
+
+  return appointment;
+};
+
+
+const sendAppointmentConfirmationEmail = async (
+  patientId,
+  doctorId,
+  date,
+  startTime,
+  reason,
+  age,
+  gender,
+  computedPrice,
+)=> {
+  const patient = await User.findById(patientId);
+  const doctor = await User.findById(doctorId);
+  const appointment = await Appointment.findById(appointmentId);
+  const {previewUrl} = await sendEmail(patient.email, "Appointment Confirmation", `You have a new appointment with Dr. ${doctor.name} on ${date} at ${startTime}. The reason for the appointment is ${reason}. The age of the patient is ${age} and the gender is ${gender}. The computed price is ${computedPrice}.`);
+  return {previewUrl};
+};
 
 export const createAppointment = async (req, res) => {
   try {
@@ -120,7 +192,7 @@ export const createAppointment = async (req, res) => {
         {
           price_data: {
             // Consider switching to a widely supported currency like 'usd' if 'pkr' is not enabled
-            currency: process.env.STRIPE_CURRENCY || "usd",
+            currency: process.env.STRIPE_CURRENCY || "pkr",
             product_data: {
               name: `Consultation with Dr. ${doctor.name}`,
               description: reason,
@@ -147,6 +219,7 @@ export const createAppointment = async (req, res) => {
     // For reliability, create the appointment on successful payment via webhook.
     // Return the checkout URL to the client now.
     return res.json({ url: session.url });
+
   } catch (err) {
     res.status(500).json({ message: err.message || "Failed to create appointment" });
   }
@@ -206,18 +279,76 @@ export const getMyAppointments = async (req, res) => {
   try {
     const userId = req.user.id;
     const role = req.user.role;
+    console.log(`📋 Fetching appointments for ${role} with ID: ${userId}`);
+    
     const filter = {};
-    if (role === "doctor") filter.doctor = userId;
-    else filter.patient = userId;
+    if (role === "doctor") {
+      filter.doctor = userId;
+    } else {
+      filter.patient = userId;
+    }
 
+    console.log("🔍 Filter:", filter);
+    
     const appointments = await Appointment.find(filter)
       .populate("patient", "name email")
       .populate("doctor", "name email")
       .sort({ date: 1, startTime: 1 });
 
+    console.log(`✅ Found ${appointments.length} appointments`);
     res.json({ appointments });
   } catch (err) {
+    console.error("❌ Error fetching appointments:", err);
     res.status(500).json({ message: err.message || "Failed to fetch my appointments" });
+  }
+};
+
+export const confirmAppointmentFromSession = async (req, res) => {
+  try {
+    const { sessionId } = req.body;
+    if (!sessionId) {
+      return res.status(400).json({ message: "Session ID is required" });
+    }
+
+    const session = await stripe.checkout.sessions.retrieve(sessionId);
+    if (!session?.metadata) {
+      return res.status(400).json({ message: "Session metadata not found" });
+    }
+
+    const appointment = await ensureAppointmentCreated(session.metadata);
+
+    // Send notifications (idempotent)
+    if (!appointment.notificationSent) {
+      const populated = await appointment.populate("patient doctor", "name email");
+      const when = `${new Date(session.metadata.date).toDateString()} ${session.metadata.startTime}-${populated.endTime}`;
+      try {
+        const p = await sendEmail(
+          populated.patient?.email,
+          "Appointment Confirmed",
+          `Hi ${populated.patient?.name || "Patient"}, your appointment with Dr. ${populated.doctor?.name || "Doctor"} is confirmed for ${when}.`
+        );
+        if (p?.previewUrl) console.log("🔗 Patient email preview:", p.previewUrl);
+      } catch (e) {
+        console.error("❌ Failed to email patient:", e.message);
+      }
+      try {
+        const d = await sendEmail(
+          populated.doctor?.email,
+          "New Appointment Booked",
+          `Hi Dr. ${populated.doctor?.name || "Doctor"}, you have a new appointment with ${populated.patient?.name || "Patient"} on ${when}. Reason: ${session.metadata.reason || "N/A"}.`
+        );
+        if (d?.previewUrl) console.log("🔗 Doctor email preview:", d.previewUrl);
+      } catch (e) {
+        console.error("❌ Failed to email doctor:", e.message);
+      }
+      populated.notificationSent = true;
+      await populated.save();
+    }
+
+    res.json({ message: "Appointment confirmed" });
+  } catch (err) {
+    console.error("❌ Error confirming appointment:", err);
+    res.status(500).json({ message: err.message || "Failed to confirm appointment" });
   }
 };
 
